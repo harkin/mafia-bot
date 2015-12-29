@@ -1,0 +1,8 @@
+#required properties
+botName=mafia-bot
+serverHostname=chat.freenode.net
+serverPort=6667
+
+#optional properties
+serverPassword=
+autoJoinChannel=#someFakeChannelName

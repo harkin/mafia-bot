@@ -1,0 +1,30 @@
+group 'com.harkin'
+version '0.0.1'
+
+apply plugin: 'application'
+
+mainClassName = 'Main'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'io.reactivex:rxjava:1.1.0'
+
+    compile 'com.bladejava:blade-core:1.5.1-beta'
+    compile 'com.bladejava:blade-startup:1.0.1'
+
+    compile 'org.pircbotx:pircbotx:2.0.1'
+    compile 'org.slf4j:slf4j-nop:1.7.13'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.2.0'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.10' //version required
+}
