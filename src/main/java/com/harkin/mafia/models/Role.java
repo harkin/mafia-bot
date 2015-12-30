@@ -1,4 +1,4 @@
-package mafia.models;
+package com.harkin.mafia.models;
 
 import org.pircbotx.User;
 

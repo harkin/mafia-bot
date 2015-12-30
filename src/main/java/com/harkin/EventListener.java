@@ -1,4 +1,6 @@
-import mafia.GameManager;
+package com.harkin;
+
+import com.harkin.mafia.GameManager;
 import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
@@ -14,7 +16,7 @@ public class EventListener extends ListenerAdapter<PircBotX> {
 
         switch (message) {
             case "!start":
-                gameManager.startGame(event.getChannel());
+                gameManager.onGameStarted(event.getChannel());
                 break;
             case "!stop":
                 //todo mafia fun never stops

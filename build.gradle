@@ -3,7 +3,7 @@ version '0.0.1'
 
 apply plugin: 'application'
 
-mainClassName = 'Main'
+mainClassName = 'com.harkin.Main'
 
 sourceCompatibility = 1.8
 

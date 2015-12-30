@@ -1,8 +1,10 @@
+package com.harkin;
+
+import com.harkin.mafia.GameManager;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
 import org.pircbotx.UtilSSLSocketFactory;
 import org.pircbotx.exception.IrcException;
-import org.pircbotx.hooks.ListenerAdapter;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,7 +29,9 @@ public class Main {
         String autoJoinChannel = botProperties.getProperty("autoJoinChannel", "");
         String serverPassword = botProperties.getProperty("serverPassword", "");
 
-        ListenerAdapter l = new EventListener();
+        ObsListener listener = new ObsListener();
+        GameManager gm = new GameManager(listener);
+        gm.start();
 
         Configuration<PircBotX> configuration = new Configuration.Builder<>()
                 .setName(botName)
@@ -36,7 +40,7 @@ public class Main {
                 .setServerPassword(serverPassword)
                 .addAutoJoinChannel(autoJoinChannel)
                 .setSocketFactory(new UtilSSLSocketFactory().trustAllCertificates()) //todo be less trustful
-                .setListenerManager(new MyThreadManager(l, l, l, l))
+                .addListener(listener)
                 .buildConfiguration();
 
         PircBotX bot = new PircBotX(configuration);
