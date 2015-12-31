@@ -28,7 +28,7 @@ public class GameManager {
 
     public void onGameStarted(User user, Channel channel) {
         idleSub.unsubscribe();
-        mafia = new Mafia(channel, obsListener);
+        mafia = new Mafia(channel, obsListener.getChannelObs(), obsListener.getPrivateObs());
         mafia.start(user);
     }
 

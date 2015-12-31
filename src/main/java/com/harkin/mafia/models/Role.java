@@ -14,4 +14,7 @@ public abstract class Role {
 
     public abstract String getInspectionText();
 
+    public final User getUser() {
+        return user;
+    }
 }
