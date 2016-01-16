@@ -12,11 +12,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'io.reactivex:rxjava:1.1.0'
-
-    compile 'com.bladejava:blade-core:1.5.1-beta'
-    compile 'com.bladejava:blade-startup:1.0.1'
 
     compile 'org.pircbotx:pircbotx:2.0.1'
     compile 'org.slf4j:slf4j-nop:1.7.13'

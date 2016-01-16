@@ -3,11 +3,10 @@ package com.harkin.mafia;
 import com.harkin.mafia.models.Role;
 import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
-import org.pircbotx.hooks.events.MessageEvent;
+import org.pircbotx.hooks.types.GenericMessageEvent;
 import rx.Observable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -17,29 +16,27 @@ public class DayManager {
 
     private final Map<Role, Integer> votes = new HashMap<>();
 
-    private final Observable<MessageEvent<PircBotX>> channelObs;
+    private final Observable<GenericMessageEvent<PircBotX>> channelObs;
     private final Channel channel;
     private final OnDayInteraction listener;
 
     private int dayCount = 1;
 
-    public DayManager(Channel channel, Observable<MessageEvent<PircBotX>> channelObs, OnDayInteraction listener) {
+    public DayManager(Channel channel, Observable<GenericMessageEvent<PircBotX>> channelObs, OnDayInteraction listener) {
         this.channel = channel;
         this.channelObs = channelObs;
         this.listener = listener;
     }
 
-    public void beginDay(List<Role> players) {
+    public void beginDay(Map<String, Role> players) {
         channel.send().message(String.format("Day %d begins. Who will you lynch? Type !vote {user} to vote", dayCount));
 
+        //todo MAKE IT SO ONLY PEOPLE IN THE GAME CAN VOTE AHHHH
         channelObs
                 .take(DAY_LENGTH_S, TimeUnit.SECONDS)
-                .filter(event -> event.getMessage().startsWith("!vote"))
-                .map(event -> event.getMessage().split(" "))
-                .filter(strings -> strings.length < 2)
-                .map(strings -> strings[1])
-                .flatMap(playerName -> Observable.from(players)
-                        .filter(role -> role.getUser().getNick().equals(playerName)))
+                .filter(pircBotXGenericMessageEvent -> isValidDayAction(pircBotXGenericMessageEvent, players))
+                .map(event -> event.getMessage().split(" ")[1])
+                .map(players::get)
                 .subscribe(this::castVote,
                         throwable -> {/*todo*/},
                         this::endDay);
@@ -53,24 +50,14 @@ public class DayManager {
         }
     }
 
-    //todo test how this compares to the rx concoction above for seeing if a vote is valid
-    private Role example(String s, List<Role> players) {
-        if (s.startsWith("!vote")) {
-            String[] words = s.split(" ");
-            if (words.length >= 2) {
-                String name = words[1];
-                for (Role r : players) {
-                    if (r.getUser().getNick().equals(s)) {
-                        return r;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private void endDay() {
         Role role = findWhoGotLynched();
+        if (role == null) {
+            channel.send().message("The day ends with no lynching");
+        } else {
+            channel.send().message(String.format("The angry mob has lynched %s", role.getUser().getNick()));
+        }
+        listener.onDayEnd(role);
         dayCount++;
     }
 
@@ -89,5 +76,13 @@ public class DayManager {
         }
 
         return lynched;
+    }
+
+    private boolean isValidDayAction(GenericMessageEvent<PircBotX> pircBotXMessageEvent, Map<String, Role> players) {
+        String[] parts = pircBotXMessageEvent.getMessage().split(" ");
+        return parts.length >= 2
+                && players.containsKey(pircBotXMessageEvent.getUser().getNick())
+                && parts[0].toLowerCase().equals("!vote")
+                && players.containsKey(parts[1]);
     }
 }

@@ -1,6 +1,6 @@
 package com.harkin;
 
-import com.harkin.mafia.GameManager;
+import com.harkin.mafia.Godfather;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
 import org.pircbotx.UtilSSLSocketFactory;
@@ -30,7 +30,7 @@ public class Main {
         String serverPassword = botProperties.getProperty("serverPassword", "");
 
         ObsListener listener = new ObsListener();
-        GameManager gm = new GameManager(listener);
+        Godfather gm = new Godfather(listener);
         gm.start();
 
         Configuration<PircBotX> configuration = new Configuration.Builder<>()

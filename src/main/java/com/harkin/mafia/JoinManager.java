@@ -1,17 +1,15 @@
 package com.harkin.mafia;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
 import org.pircbotx.User;
-import org.pircbotx.hooks.events.MessageEvent;
+import org.pircbotx.hooks.types.GenericMessageEvent;
 import rx.Observable;
 import rx.Subscription;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class JoinManager {
@@ -21,13 +19,13 @@ public class JoinManager {
     private static final int ARBITRARY_NUMBER = 5; //todo find a better home for this, probably wherever the roles per user count ends up living
 
     private final List<User> users = new ArrayList<>();
+    private final Observable<GenericMessageEvent<PircBotX>> channelObs;
     private final OnJoinInteraction listener;
     private final Channel channel;
-    private final Observable<MessageEvent<PircBotX>> channelObs;
 
     private Subscription subscription;
 
-    public JoinManager(Channel channel, Observable<MessageEvent<PircBotX>> channelObs, OnJoinInteraction listener) {
+    public JoinManager(Channel channel, Observable<GenericMessageEvent<PircBotX>> channelObs, OnJoinInteraction listener) {
         this.channel = channel;
         this.listener = listener;
         this.channelObs = channelObs;
@@ -35,15 +33,14 @@ public class JoinManager {
 
     public void begin(User user) {
         users.add(user);
-        Executors.newSingleThreadScheduledExecutor().schedule(this::endJoining, JOIN_PERIOD_S, TimeUnit.SECONDS);
-        //todo is there a way to unsubscribe after a defined period of time? Would make the executor unnecessary
         subscription = channelObs
+                .take(JOIN_PERIOD_S, TimeUnit.SECONDS)
                 .filter(event -> event.getMessage().startsWith("!"))
                 .filter(event -> event.getMessage().toLowerCase().startsWith("!join"))
-                .doOnNext(event -> event.respond(String.format("%s has joined the game! Current players: %s",
-                        event.getUser().getNick(),
-                        Joiner.on(",").join(users))))
-                .subscribe(pircBotXMessageEvent -> users.add(pircBotXMessageEvent.getUser()));
+                .doOnNext(event -> event.respond(String.format("%s has joined the game!", event.getUser().getNick())))
+                .subscribe(pircBotXMessageEvent -> users.add(pircBotXMessageEvent.getUser()),
+                        throwable -> {},
+                        this::endJoining);
     }
 
     private void endJoining() {

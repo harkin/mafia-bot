@@ -4,13 +4,14 @@ import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.pircbotx.hooks.events.PrivateMessageEvent;
+import org.pircbotx.hooks.types.GenericMessageEvent;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 
 public class ObsListener extends ListenerAdapter<PircBotX> {
 
-    private final BehaviorSubject<MessageEvent<PircBotX>> channelMessage = BehaviorSubject.create();
-    private final BehaviorSubject<PrivateMessageEvent<PircBotX>> privateMessage = BehaviorSubject.create();
+    private final BehaviorSubject<GenericMessageEvent<PircBotX>> channelMessage = BehaviorSubject.create();
+    private final BehaviorSubject<GenericMessageEvent<PircBotX>> privateMessage = BehaviorSubject.create();
 
     @Override
     public void onMessage(MessageEvent<PircBotX> event) throws Exception {
@@ -22,11 +23,11 @@ public class ObsListener extends ListenerAdapter<PircBotX> {
         privateMessage.onNext(event);
     }
 
-    public Observable<MessageEvent<PircBotX>> getChannelObs() {
+    public Observable<GenericMessageEvent<PircBotX>> getChannelObs() {
         return channelMessage.asObservable();
     }
 
-    public Observable<PrivateMessageEvent<PircBotX>> getPrivateObs() {
+    public Observable<GenericMessageEvent<PircBotX>> getPrivateObs() {
         return privateMessage.asObservable();
     }
 }
