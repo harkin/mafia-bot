@@ -7,9 +7,7 @@ import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.types.GenericMessageEvent;
 import rx.Observable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class NightManager {
@@ -45,7 +43,7 @@ public class NightManager {
                 .map(pircBotXMessageEvent -> new Pair<>(players.get(pircBotXMessageEvent.getUser().getNick()),
                         players.get(pircBotXMessageEvent.getMessage().split(" ")[1])))
                 .subscribe(
-                        pair -> actions.add(pair.getKey().getPriority(), pair),
+                        pair -> actions.set(pair.getKey().getPriority(), pair),
                         throwable -> { },  //todo handle errors
                         () -> endNight(evaluateActions(actions)));
 
@@ -60,32 +58,28 @@ public class NightManager {
         List<Role> protectedUsers = new ArrayList<>();
         List<Role> murderedUsers = new ArrayList<>();
 
-        for (Pair<Role, Role> pair : actions) {
-            if (pair != null) {
-                int priority = pair.getKey().getPriority();
-                if (!blockedUsers.contains(pair.getKey())) {
-                    if (priority == Role.PRIORITY_HOOKER) {
-                        blockedUsers.add(pair.getValue());
-                    } else if (priority == Role.PRIORITY_BODYGUARD) {
-                        protectedUsers.add(pair.getValue());
-                    } else if (priority == Role.PRIORITY_WEREWOLF) {
-                        if (!protectedUsers.contains(pair.getValue())) {
-                            murderedUsers.add(pair.getValue());
-                        }
-                    } else if (priority == Role.PRIORITY_MAFIA) {
-                        if (!protectedUsers.contains(pair.getValue())) {
-                            murderedUsers.add(pair.getValue());
-                        }
-                    } else if (priority == Role.PRIORITY_INSPECTOR) {
-                        pair.getKey().getUser().send().message(pair.getValue().getInspectionText());
-                    } else if (priority == Role.PRIORITY_SILENCER) {
-                        //todo
+        actions.stream().filter(pair -> pair != null).forEach(pair -> {
+            int priority = pair.getKey().getPriority();
+            if (!blockedUsers.contains(pair.getKey())) {
+                if (priority == Role.PRIORITY_HOOKER) {
+                    blockedUsers.add(pair.getValue());
+                } else if (priority == Role.PRIORITY_BODYGUARD) {
+                    protectedUsers.add(pair.getValue());
+                } else if (priority == Role.PRIORITY_WEREWOLF) {
+                    if (!protectedUsers.contains(pair.getValue())) {
+                        murderedUsers.add(pair.getValue());
                     }
-                } else {
-                    pair.getKey().getUser().send().message("You were too busy fucking a hooker to do anything last night");
+                } else if (priority == Role.PRIORITY_MAFIA) {
+                    if (!protectedUsers.contains(pair.getValue())) {
+                        murderedUsers.add(pair.getValue());
+                    }
+                } else if (priority == Role.PRIORITY_INSPECTOR) {
+                    pair.getKey().getUser().send().message(pair.getValue().getInspectionText());
+                } else if (priority == Role.PRIORITY_SILENCER) {
+                    //todo
                 }
             }
-        }
+        });
 
         return murderedUsers;
     }

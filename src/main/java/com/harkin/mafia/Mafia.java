@@ -7,24 +7,28 @@ import org.pircbotx.User;
 import org.pircbotx.hooks.types.GenericMessageEvent;
 import rx.Observable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Mafia implements OnJoinInteraction, OnDayInteraction, OnNightInteraction {
     private final UserManager userManager;
     private final JoinManager joinManager;
     private final DayManager dayManager;
     private final NightManager nightManager;
-
+    private final GameOverListener gameOverListener;
     private final Channel channel;
 
     public Mafia(Channel channel,
                  Observable<GenericMessageEvent<PircBotX>> channelObs,
-                 Observable<GenericMessageEvent<PircBotX>> privateObs) {
+                 Observable<GenericMessageEvent<PircBotX>> privateObs,
+                 GameOverListener gameOverListener) {
         userManager = new UserManager();
         joinManager = new JoinManager(channel, channelObs, this);
         dayManager = new DayManager(channel, channelObs, this);
         nightManager = new NightManager(channel, channelObs, privateObs, this);
 
+        this.gameOverListener = gameOverListener;
         this.channel = channel;
     }
 
@@ -40,7 +44,7 @@ public class Mafia implements OnJoinInteraction, OnDayInteraction, OnNightIntera
 
     @Override
     public void onGameCancelled() {
-        //todo alert godfather that game is over
+        gameOverListener.gameOver();
     }
 
     @Override
@@ -48,7 +52,12 @@ public class Mafia implements OnJoinInteraction, OnDayInteraction, OnNightIntera
         if (role != null) {
             userManager.killPlayer(role.getUser().getNick());
         }
-        nightManager.beginNight(userManager.getPlayers());
+
+        if (isGameOver(userManager.getPlayers())) {
+            gameOverListener.gameOver();
+        } else {
+            nightManager.beginNight(userManager.getPlayers());
+        }
     }
 
     @Override
@@ -56,8 +65,27 @@ public class Mafia implements OnJoinInteraction, OnDayInteraction, OnNightIntera
         for (Role deceased : theMurdered) {
             userManager.killPlayer(deceased.getUser().getNick());
         }
-        dayManager.beginDay(userManager.getPlayers());
+        if (isGameOver(userManager.getPlayers())) {
+            gameOverListener.gameOver();
+        } else {
+            dayManager.beginDay(userManager.getPlayers());
+        }
     }
 
+    private boolean isGameOver(Map<String, Role> players) {
+        if (players.isEmpty()) {
+            channel.send().message("The game is over! No one wins");
+            return true;
+        }
 
+        Map<Role.Faction, Integer> counts = new HashMap<>();
+
+        for (Role.Faction faction : Role.Faction.values()) {
+            counts.put(faction, 0);
+        }
+
+        players.values().forEach(role -> counts.put(role.getFaction(), counts.get(role.getFaction()) + 1));
+
+        return counts.values().stream().filter(integer -> integer > 0).count() > 1;
+    }
 }
