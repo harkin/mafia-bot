@@ -45,5 +45,6 @@ public class Main {
 
         PircBotX bot = new PircBotX(configuration);
         bot.startBot();
+        System.out.println(bot.isConnected());
     }
 }

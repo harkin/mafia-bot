@@ -1,23 +1,25 @@
 package com.harkin.mafia.models;
 
+import org.pircbotx.User;
+
 public class Bodyguard extends Role {
-    @Override
-    public String getInspectionText() {
-        return null;
+
+    public Bodyguard(User user) {
+        super(user);
     }
 
     @Override
     public String getNightActionText() {
-        return null;
+        return "!guard";
     }
 
     @Override
     public int getPriority() {
-        return 0;
+        return PRIORITY_BODYGUARD;
     }
 
     @Override
     public Faction getFaction() {
-        return null;
+        return Faction.VILLAGE;
     }
 }

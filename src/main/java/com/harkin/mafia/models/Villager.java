@@ -9,12 +9,17 @@ public class Villager extends Role {
     }
 
     @Override
-    public boolean hasNightAction() {
-        return false;
+    public String getNightActionText() {
+        return null;
     }
 
     @Override
-    public String getInspectionText() {
-        return String.format("%s is a common villager", user.getNick());
+    public int getPriority() {
+        return 0;
+    }
+
+    @Override
+    public Faction getFaction() {
+        return Faction.VILLAGE;
     }
 }

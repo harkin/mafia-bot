@@ -20,7 +20,7 @@ public class Godfather implements GameOverListener {
     public void start() {
         idleSub = obsListener.getChannelObs()
                 .filter(event -> event.getMessage().startsWith("!"))
-                .filter(event -> event.getMessage().toLowerCase().equals("!start"))
+                .filter(event -> event.getMessage().toLowerCase().equals("!mafia"))
                 .subscribe(event -> {
                     startGame(event.getUser(), ((MessageEvent) event).getChannel());
                 });

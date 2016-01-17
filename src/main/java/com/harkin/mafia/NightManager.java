@@ -74,7 +74,7 @@ public class NightManager {
                         murderedUsers.add(pair.getValue());
                     }
                 } else if (priority == Role.PRIORITY_INSPECTOR) {
-                    pair.getKey().getUser().send().message(pair.getValue().getInspectionText());
+                    pair.getKey().getUser().send().message(pair.getValue().toString());
                 } else if (priority == Role.PRIORITY_SILENCER) {
                     //todo
                 }
@@ -89,7 +89,7 @@ public class NightManager {
             channel.send().message("No one was killed.");
         } else {
             for (Role deceased : theMurdered) {
-                channel.send().message(String.format("%s (%s) was killed!", deceased.getUser().getNick(), deceased.getInspectionText()));
+                channel.send().message(String.format("%s (%s) was killed!", deceased.getUser().getNick(), deceased));
             }
         }
 

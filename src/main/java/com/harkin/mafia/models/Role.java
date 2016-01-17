@@ -21,8 +21,6 @@ public abstract class Role {
         this.user = user;
     }
 
-    public abstract String getInspectionText();
-
     public abstract String getNightActionText();
 
     public abstract int getPriority();
@@ -31,5 +29,10 @@ public abstract class Role {
 
     public final User getUser() {
         return user;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName().toLowerCase();
     }
 }
